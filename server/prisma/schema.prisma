@@ -1,0 +1,205 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum ContractType {
+  REV
+  TIERS
+}
+
+enum Environment {
+  dev
+  uat
+  prod
+  prng
+}
+
+enum UserType {
+  admin
+  operator
+}
+
+model Operator {
+  id           BigInt       @id @default(autoincrement())
+  rgsId        String       @map("rgs_id") @db.VarChar(255)
+  name         String       @db.VarChar(255)
+  siteId       String       @map("site_id") @db.VarChar(255)
+  brands       Json?
+  env          String       @default("dev") @db.VarChar(255)
+  contractType ContractType @map("contract_type")
+  revShare     Decimal?     @map("rev_share") @db.Decimal(10, 2)
+  createdAt    DateTime?    @map("created_at") @db.Timestamp(0)
+  updatedAt    DateTime?    @map("updated_at") @db.Timestamp(0)
+
+  @@map("operators")
+}
+
+model Game {
+  id             BigInt   @id @default(autoincrement())
+  gameId         Int?     @map("game_id") @db.Int
+  siteId         String?  @map("site_id") @db.VarChar(255)
+  brandId        String?  @map("brand_id") @db.VarChar(50)
+  title          String?  @db.VarChar(255)
+  provider       String?  @db.VarChar(255)
+  env            String   @db.VarChar(10)
+  theoreticalRtp Decimal? @map("theoretical_rtp") @db.Decimal(5, 2)
+  rtpSd          Decimal? @map("rtp_sd") @db.Decimal(10, 4)
+
+  @@map("games")
+}
+
+model GameResource {
+  id         BigInt      @id @default(autoincrement())
+  gameId     String      @map("game_id") @db.VarChar(255)
+  operatorId String      @map("operator_id") @db.VarChar(255)
+  fieldId    Int         @map("field_id") @db.Int
+  env        Environment @default(dev)
+  language   String      @db.VarChar(50)
+  content    String?     @db.Text
+
+  @@map("game_resources")
+}
+
+model GameResourceType {
+  id             BigInt                     @id @default(autoincrement()) @db.UnsignedBigInt
+  fieldKey       String                     @map("field_key") @db.VarChar(255)
+  fieldLabel     String                     @map("field_label") @db.VarChar(255)
+  fieldType      String                     @map("field_type") @db.VarChar(255)
+  resourceValues GamesResourceValue[]
+  fieldMappings  GameOperatorFieldMapping[]
+
+  @@map("game_resource_types")
+}
+
+model GameOperatorField {
+  id          BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  fieldLabel  String  @map("field_label") @db.VarChar(255)
+  fieldKey    String  @map("field_key") @db.VarChar(255)
+  fieldType   String  @map("field_type") @db.VarChar(255)
+  fieldValues String? @map("field_values") @db.Text
+  operatorID  String  @db.VarChar(255)
+
+  mapping GameOperatorFieldMapping?
+
+  @@map("game_operator_fields")
+}
+
+model GamesResourceValue {
+  id                   BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  gameId               String  @map("game_id") @db.VarChar(255)
+  gameResourcesFieldId BigInt  @map("game_resources_field_id") @db.UnsignedBigInt
+  language             String? @db.VarChar(255)
+  fieldValue           String? @map("field_value") @db.Text
+
+  resourceType GameResourceType @relation(fields: [gameResourcesFieldId], references: [id])
+
+  @@unique([gameId, gameResourcesFieldId, language], map: "game_resource_values_unique")
+  @@index([gameResourcesFieldId], map: "game_resource_values_field_fk")
+  @@index([gameId], map: "idx_game_id")
+  @@map("games_resources_values")
+}
+
+model GameOperatorFieldMapping {
+  id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+
+  operatorFieldId BigInt @map("operator_field_id") @db.UnsignedBigInt
+
+  gameResourceTypeId BigInt @map("game_resource_type_id") @db.UnsignedBigInt
+
+  extraOptions Json? @map("extra_options")
+
+  operatorField GameOperatorField @relation(fields: [operatorFieldId], references: [id])
+
+  gameResourceType GameResourceType @relation(fields: [gameResourceTypeId], references: [id])
+
+  @@unique([operatorFieldId], map: "game_operator_field_mappings_operator_unique")
+  @@index([gameResourceTypeId], map: "game_operator_field_mappings_resource_type_index")
+  @@map("game_operator_field_mappings")
+}
+
+model User {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  name            String    @db.VarChar(255)
+  email           String    @db.VarChar(255)
+  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamp(0)
+  password        String    @db.VarChar(255)
+  rememberToken   String?   @map("remember_token") @db.VarChar(100)
+
+  createdAt DateTime? @map("created_at") @db.Timestamp(0)
+
+  updatedAt   DateTime?    @map("updated_at") @db.Timestamp(0)
+  env         Environment? @default(dev)
+  allowedEnvs Json?        @map("allowed_envs") @db.Json
+  userType    UserType     @default(operator) @map("user_type")
+  siteId      String       @map("site_id") @db.VarChar(20)
+  provider    String       @db.VarChar(30)
+
+  roles UserRole[]
+
+  @@unique(email, map: "users_email_unique")
+  @@map("users")
+}
+
+model Permission {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  name        String    @db.VarChar(255)
+  guardName   String    @map("guard_name") @db.VarChar(255)
+  resource    String?   @db.VarChar(255)
+  action      String?   @db.VarChar(255)
+  description String?   @db.VarChar(255)
+  createdAt   DateTime? @map("created_at") @db.Timestamp(0)
+  updatedAt   DateTime? @map("updated_at") @db.Timestamp(0)
+
+  roles RoleHasPermission[]
+
+  @@unique([name, guardName], map: "permissions_name_guard_name_unique")
+  @@index([resource, action], map: "permissions_resource_action_index")
+  @@map("permissions")
+}
+
+model Role {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  name        String    @db.VarChar(255)
+  guardName   String    @default("api") @map("guard_name") @db.VarChar(255)
+  description String?   @db.VarChar(255)
+  createdAt   DateTime? @map("created_at") @db.Timestamp(0)
+  updatedAt   DateTime? @map("updated_at") @db.Timestamp(0)
+
+  users       UserRole[]
+  permissions RoleHasPermission[]
+
+  @@unique([name, guardName], map: "roles_name_guard_name_unique")
+  @@map("roles")
+}
+
+model RoleHasPermission {
+  permissionId BigInt @map("permission_id") @db.UnsignedBigInt
+  roleId       BigInt @map("role_id") @db.UnsignedBigInt
+
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade, map: "rhp_permission_id_foreign")
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade, map: "rhp_role_id_foreign")
+
+  @@id([permissionId, roleId])
+  @@index([roleId], map: "rhp_role_id_foreign")
+  @@map("role_has_permissions")
+}
+
+model UserRole {
+  userId BigInt @map("user_id") @db.UnsignedBigInt
+
+  roleId BigInt @map("role_id") @db.UnsignedBigInt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
+}
