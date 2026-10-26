@@ -66,35 +66,43 @@ export const useAlert = () => {
     });
   };
 
-  const axiosErrorAlert = (_data: any) => {
-    let message = "";
-    if (typeof _data.response === "undefined") {
-      return alertError("Something went wrong!");
+  const axiosErrorAlert = (error: any) => {
+    const response = error?.response;
+    const data = response?._data ?? response?.data ?? error?.data ?? error;
+    const status = response?.status ?? data?.statusCode;
+    const messages = (value: unknown): string[] => {
+      if (Array.isArray(value)) return value.flatMap(messages);
+      return typeof value === "string" && value.trim() ? [value] : [];
+    };
+
+    let details = messages(data?.message);
+    if (!details.length && data?.errors && typeof data.errors === "object") {
+      details = Object.values(data.errors).flatMap(messages);
+    }
+    if (!details.length) details = messages(data?.error);
+    if (!details.length) {
+      details = [
+        status === 403
+          ? "You don't have access!"
+          : status === 404
+            ? "Request not found!"
+            : "Something went wrong!",
+      ];
     }
 
-    switch (_data.response.status) {
-      case 500:
-        message = _data.response._data.message;
-        break;
-      case 422:
-        if (typeof _data.response._data.errors === "object") {
-          message = Object.entries(_data.response._data.errors)
-            .map((error) => error[1])
-            .join("<br />");
-        } else if (typeof _data.response._data.message !== "undefined") {
-          message = _data.response.data.message;
-        }
-        break;
-      case 403:
-        message = "You don't have access!";
-        break;
-      case 404:
-        message = "Request not found!";
-        break;
-      default:
-        message = _data.response.data.error;
-    }
-    alertError(message);
+    // alertError renders HTML: escape server text before adding line breaks.
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    alertError(
+      details
+        .map((message) => message.replace(/[&<>"']/g, (char) => entities[char]))
+        .join("<br />"),
+    );
   };
 
   const alertSuccess = (message: string) => {
@@ -102,6 +110,7 @@ export const useAlert = () => {
       title: "Success!!",
       html: message,
       icon: "success",
+      customClass: { container: "app-alert" },
       confirmButtonText: "OK",
       toast: true,
     });
@@ -112,6 +121,7 @@ export const useAlert = () => {
       title: "Error!!",
       html: message,
       icon: "error",
+      customClass: { container: "app-alert" },
       confirmButtonText: "OK",
       toast: true,
     });

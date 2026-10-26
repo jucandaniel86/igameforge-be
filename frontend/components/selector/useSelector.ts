@@ -19,7 +19,7 @@ export const useSelector = () => {
   };
 
   const getEnvironments = async () => {
-    return await useAPIFetch("/selector/environments");
+    return await useAPIFetch("/selectors/environments");
   };
 
   return {

@@ -1,20 +1,20 @@
 export type RoleType = {
   id: number;
   name: string;
-  guard_name: string;
+  guardName: string;
   description: string | null;
-  created_at?: string;
-  updated_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type PermissionType = {
   id: number;
   name: string;
-  guard_name: string;
+  guardName: string;
   resource: string | null;
   action: string | null;
   description: string | null;
-  created_at?: string;
-  updated_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 

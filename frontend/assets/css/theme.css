@@ -503,6 +503,33 @@ select {
   opacity: 0;
 }
 
+/* Keep role permission actions visible while the permission list scrolls. */
+.role-permissions-card {
+  display: flex;
+  flex-direction: column;
+  height: min(800px, calc(100dvh - 48px));
+  overflow: hidden;
+}
+.role-permissions-header,
+.role-permissions-footer {
+  flex: 0 0 auto;
+}
+.role-permissions-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.role-permissions-footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--app-border);
+}
+
+/* Render success/error alerts above Vuetify dialogs and their scrims. */
+.swal2-container.app-alert {
+  z-index: 10000 !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

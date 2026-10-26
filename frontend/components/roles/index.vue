@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import moment from "moment";
-import type { ReportHeadersData } from "../reports/Types";
+import type { ReportHeadersData } from "~/app/types";
 import type { RoleType } from "./Utils";
 
 import RoleForm from "./Form.vue";
@@ -32,14 +32,14 @@ const headers = ref<ReportHeadersData[]>([
     title: "Guard",
     align: "start",
     sortable: false,
-    value: "guard_name",
+    value: "guardName",
     width: "15%",
   },
   {
     title: "Created at",
     align: "start",
     sortable: false,
-    value: "created_at",
+    value: "createdAt",
     width: "20%",
   },
   {
@@ -100,7 +100,7 @@ const deleteItem = async (id: number) => {
   if (!can("roles.manage")) return;
   confirmDelete(async () => {
     const { success, data, error } = await useApiDeleteFetch("/roles/delete", {
-      id,
+      role_id: id,
     });
 
     if (success) {
@@ -159,8 +159,8 @@ onMounted(() => {
             {{ item.description || "-" }}
           </div>
         </td>
-        <td class="custom-class">{{ item.guard_name }}</td>
-        <td class="custom-class">{{ convertDate(item.created_at) }}</td>
+        <td class="custom-class">{{ item.guardName }}</td>
+        <td class="custom-class">{{ convertDate(item.createdAt) }}</td>
         <td class="custom-class">
           <v-btn
             icon="mdi-shield-check-outline icon-sm"
@@ -216,6 +216,6 @@ onMounted(() => {
   </v-dialog>
 
   <v-dialog v-model="permissionsModal" :maxWidth="1200" width="95%">
-    <RolePermissions :role="selectedRoleForPermissions" />
+    <RolePermissions :role="selectedRoleForPermissions" @on-close="permissionsModal = false"/>
   </v-dialog>
 </template>

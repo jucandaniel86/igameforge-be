@@ -41,9 +41,14 @@ const rolesLoading = ref<boolean>(false);
 const syncFormItem = () => {
   if (!props.item) return;
 
-  form.value = { ...form.value, ...props.item };
+	form.value.id = props.item.id;
+  form.value.name = props.item.name
+	form.value.email = props.item.email
+	form.value.site_id = props.item.siteId ?? '';
+	form.value.provider_id = props.item.providerId ?? ''
+
   form.value.environments = {
-    envs: Array.isArray((props.item as any).allowed_envs) ? (props.item as any).allowed_envs : [],
+    envs: Array.isArray((props.item as any).allowedEnvs) ? (props.item as any).allowedEnvs : [],
     defaultEnv: (props.item as any).env || "",
   };
   form.value.roles = (props.item as any)?.role_id || null;
@@ -73,14 +78,13 @@ const generatePassword = () => {
   showPassword.value = true;
 };
 
-const validate = async () => {
-  const action = typeof props.item?.id !== "undefined" ? "update" : "save";
+const validate = async () => { 
   const payload = { ...form.value };
 
   if (!payload.roles) {
     delete payload.roles;
   }
-  const { success, data, error } = await useApiPostFetch(`/users/${action}`, payload);
+  const { success, data, error } = await useApiPostFetch(`/users/save`, payload);
 
   if (success) {
     alertSuccess(data.message);

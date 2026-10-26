@@ -6,10 +6,13 @@ const props = defineProps<{
   role?: RoleType;
 }>();
 
+const emits = defineEmits<{ onClose: []}>();
+
 const { alertSuccess, axiosErrorAlert } = useAlert();
 const { can } = usePermissions();
 
 const loading = ref(false);
+const saving = ref(false);
 const permissions = ref<PermissionType[]>([]);
 const selectedPermissionIds = ref<number[]>([]);
 const initialPermissionIds = ref<number[]>([]);
@@ -63,7 +66,7 @@ const loadPermissions = async () => {
 };
 
 const save = async () => {
-  if (!can("roles.manage")) {
+  if (loading.value || saving.value || !can("roles.manage")) {
     return;
   }
 
@@ -82,35 +85,25 @@ const save = async () => {
     return;
   }
 
-  loading.value = true;
-
-  if (toAttach.length) {
+  saving.value = true;
+  try {
     const { success, error } = await useApiPostFetch("/roles/permissions/attach", {
       role_id: props.role.id,
-      permission_ids: toAttach,
+      permission_ids: [...selectedSet],
     });
 
-    if (!success && error) {
-      loading.value = false;
-      return axiosErrorAlert(error);
+    if (!success) {
+      axiosErrorAlert(error);
+      return;
     }
+
+    initialPermissionIds.value = [...selectedSet];
+    alertSuccess("Role permissions were saved successfully");
+  } catch (error) {
+    axiosErrorAlert(error);
+  } finally {
+    saving.value = false;
   }
-
-  if (toDetach.length) {
-    const { success, error } = await useApiPostFetch("/roles/permissions/detach", {
-      role_id: props.role.id,
-      permission_ids: toDetach,
-    });
-
-    if (!success && error) {
-      loading.value = false;
-      return axiosErrorAlert(error);
-    }
-  }
-
-  initialPermissionIds.value = [...selectedPermissionIds.value];
-  loading.value = false;
-  alertSuccess("Role permissions were saved successfuly");
 };
 
 watch(
@@ -120,19 +113,17 @@ watch(
   },
   {
     immediate: true,
-  }
+  },
 );
 </script>
 
 <template>
-  <CommonCard :title="`Permissions: ${role?.name || ''}`">
-    <div class="pa-3">
-      <v-alert
-        type="info"
-        variant="tonal"
-        class="mb-3"
-        density="compact"
-      >
+  <v-card class="role-permissions-card" :aria-busy="loading || saving">
+    <v-card-title class="role-permissions-header">
+      Permissions: {{ role?.name || "" }}
+    </v-card-title>
+    <v-card-text class="role-permissions-body">
+      <v-alert type="info" variant="tonal" class="mb-3" density="compact">
         Select permissions and press Save.
       </v-alert>
 
@@ -155,6 +146,7 @@ watch(
               <v-checkbox
                 v-model="selectedPermissionIds"
                 :value="permission.id"
+                :disabled="saving || !can('roles.manage')"
                 density="compact"
                 hide-details
                 :label="permission.name"
@@ -163,11 +155,19 @@ watch(
           </v-row>
         </div>
       </div>
-
-      <v-btn color="success" @click="save" :disabled="loading || !can('roles.manage')">
-        <i class="mdi mdi-content-save" />
+    </v-card-text>
+    <v-card-actions class="role-permissions-footer">
+			<v-btn @click="emits('onClose')">Close</v-btn>
+      <v-btn
+        color="success"
+        variant="flat"
+        prepend-icon="mdi-content-save"
+        :loading="saving"
+        :disabled="loading || saving || !can('roles.manage')"
+        @click="save"
+      >
         Save
       </v-btn>
-    </div>
-  </CommonCard>
+    </v-card-actions>
+  </v-card>
 </template>

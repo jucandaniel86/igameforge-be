@@ -18,7 +18,7 @@ const rules = {
   required: (value: any) => !!value || "Required.",
 };
 
-const { alertSuccess, axiosErrorAlert } = useAlert();
+const { alertSuccess, alertError } = useAlert();
 
 if (props.item) {
   form.value = { ...form.value, ...props.item };
@@ -41,10 +41,10 @@ const save = async () => {
     emitters("roles:reload-list");
     return;
   }
-
-  if (error) {
-    axiosErrorAlert(error);
-  }
+ 
+   
+    alertError(error.message);
+ 
 };
 </script>
 

@@ -9,6 +9,12 @@ import { ScheduledModule } from './scheduled/scheduled.module.js';
 import { OperatorsModule } from './operators/operators.module.js';
 import { ResourcesModule } from './resources/resources.module.js';
 import { SelectorsModule } from './selectors/selectors.module.js';
+import { RolesModule } from './roles/roles.module.js';
+import { UsersController } from './users/users.controller.js';
+import { UsersService } from './users/users.service.js';
+import { UsersModule } from './users/users.module.js';
+import { ForgeController } from './forge/forge.controller.js';
+import { ForgeModule } from './forge/forge.module.js';
 
 @Module({
   imports: [
@@ -21,7 +27,11 @@ import { SelectorsModule } from './selectors/selectors.module.js';
     OperatorsModule,
     ResourcesModule,
     SelectorsModule,
+    RolesModule,
+    UsersModule,
+    ForgeModule,
   ],
-  providers: [],
+  providers: [UsersService],
+  controllers: [UsersController, ForgeController],
 })
 export class AppModule {}

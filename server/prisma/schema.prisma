@@ -168,8 +168,8 @@ model Role {
   name        String    @db.VarChar(255)
   guardName   String    @default("api") @map("guard_name") @db.VarChar(255)
   description String?   @db.VarChar(255)
-  createdAt   DateTime? @map("created_at") @db.Timestamp(0)
-  updatedAt   DateTime? @map("updated_at") @db.Timestamp(0)
+	createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+	updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
 
   users       UserRole[]
   permissions RoleHasPermission[]

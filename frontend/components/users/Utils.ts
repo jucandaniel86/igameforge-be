@@ -77,6 +77,8 @@ export type UserType = {
   created_at: string;
   role_id?: number | null;
   role_name?: string | null;
+	siteId?: string | null
+	providerId?: string | null
 };
 
 export function debounce(func: any, timeout: number) {

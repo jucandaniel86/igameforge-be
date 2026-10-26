@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ReportHeadersData } from "../reports/Types";
+import type { ReportHeadersData } from "~/app/types";
 import type { PermissionType } from "../roles/Utils";
 
 const totalItems = ref<number>(0);
@@ -34,7 +34,7 @@ const headers = ref<ReportHeadersData[]>([
     title: "Guard",
     align: "start",
     sortable: false,
-    value: "guard_name",
+    value: "guardName",
     width: "20%",
   },
 ]);
@@ -105,7 +105,7 @@ onMounted(() => {
         </td>
         <td class="custom-class">{{ item.resource || "-" }}</td>
         <td class="custom-class">{{ item.action || "-" }}</td>
-        <td class="custom-class">{{ item.guard_name }}</td>
+        <td class="custom-class">{{ item.guardName }}</td>
       </tr>
     </template>
   </v-data-table>

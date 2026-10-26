@@ -7,7 +7,7 @@ import { usePermissions } from "~/composables/usePermissions";
 //components
 import UserForm from "./Form.vue";
 import UserPasswordForm from "./Password.vue";
-import type { ReportHeadersData } from "../reports/Types";
+import type { ReportHeadersData } from "~/app/types";
 
 //composables
 const { confirmDelete } = useAlert();
@@ -115,13 +115,6 @@ const deleteItem = async (id: number) => {
 			return axiosErrorAlert(error);
 		}
 	})
-}
-
-const testAPIRequest = async () => {
-	const { success, data } = await useAPIFetch("/users/test");
-	if (success) {
-		console.log(data);
-	}
 }
 
 //mounted

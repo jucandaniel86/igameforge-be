@@ -24,7 +24,7 @@ const emitters = defineEmits(["update:modelValue"]);
 
 const environments = ref<string[]>([]);
 const envModel = ref<string[]>([]);
-const defaultEnv = ref<string>("");
+const defaultEnv = ref<string>("dev");
 const loading = ref<boolean>(false);
 let isSyncingModel = false;
 
@@ -34,7 +34,7 @@ const normalizeEnvironments = (items: any): string[] => {
   return items
     .map((item) => {
       if (typeof item === "string") return item;
-      return item?.key || item?.value || item?.val || item?.label || "";
+      return item?.id || item?.value || item?.val || item?.label || "";
     })
     .filter(Boolean);
 };
