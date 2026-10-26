@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
@@ -14,6 +15,7 @@ import {
 import { SaveUsersDto } from './dto/SaveUsersDto.js';
 import * as bcrypt from 'bcrypt';
 import { ChangePasswordDto } from './dto/ChangePasswordDto.js';
+import { JwtPayload } from '../auth/strategies/jwt.strategy.js';
 
 @Injectable()
 export class UsersService {
@@ -208,5 +210,32 @@ export class UsersService {
     }
 
     return true;
+  }
+
+  async changeUserEnvironment(user: JwtPayload, env: Environment) {
+    const currentUser = await this.prisma.user.findFirst({
+      where: {
+        email: user.email,
+      },
+    });
+
+    if (!currentUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    const allowedEnvs = currentUser.allowedEnvs;
+
+    if (!Array.isArray(allowedEnvs) || !allowedEnvs.includes(env)) {
+      throw new ForbiddenException('Environment not allowed');
+    }
+
+    return this.prisma.user.update({
+      data: {
+        env,
+      },
+      where: {
+        id: currentUser.id,
+      },
+    });
   }
 }

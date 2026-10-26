@@ -11,7 +11,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "commit:patch": "npm version patch --no-git-tag-version",
-    "precommit": "npm run commit:patch && git add --all"
+    "precommit": "npm run commit:patch && git add --all",
+    "test:auth": "node --test test/auth-session.test.mjs"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",

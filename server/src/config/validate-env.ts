@@ -18,6 +18,22 @@ class Environment {
   @MinLength(32)
   JWT_SECRET!: string;
 
+  @IsString()
+  @MinLength(32)
+  JWT_REFRESH_SECRET!: string;
+
+  @IsString()
+  @Matches(/^[1-9]\d*(s|m|h|d)$/)
+  JWT_ACCESS_EXPIRES_IN = '30m';
+
+  @IsString()
+  @Matches(/^[1-9]\d*(s|m|h|d)$/)
+  JWT_REFRESH_EXPIRES_IN = '7d';
+
+  @IsString()
+  @Matches(/^(lax|strict|none)$/)
+  JWT_REFRESH_COOKIE_SAME_SITE = 'lax';
+
   @Type(() => Number)
   @IsInt()
   @Min(1)
@@ -39,6 +55,15 @@ export function validateEnv(config: Record<string, unknown>): Environment {
     throw new Error(
       `Invalid environment configuration: ${errors.map((error) => error.property).join(', ')}`,
     );
+  }
+  if (env.JWT_REFRESH_SECRET === env.JWT_SECRET) {
+    throw new Error('JWT_REFRESH_SECRET must differ from JWT_SECRET');
+  }
+  if (
+    env.JWT_REFRESH_COOKIE_SAME_SITE === 'none' &&
+    config.NODE_ENV !== 'production'
+  ) {
+    throw new Error('SameSite=None requires production HTTPS cookies');
   }
   return env;
 }

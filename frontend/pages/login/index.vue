@@ -5,6 +5,7 @@ import { useAuthStore } from "~/store/auth";
 
 const router = useRouter();
 const store = useAuthStore();
+const nuxtApp = useNuxtApp();
 
 const loading = ref(false);
 const isSubmitted = ref(false);
@@ -14,26 +15,34 @@ const formData = ref({
   password: "",
 });
 
-const onSignIn = async () => { 
+const onSignIn = async () => {
   loading.value = true;
   const { success, error, message } = await store.login(formData.value);
   loading.value = false;
- 
+
   if (!success) {
-	  errorMsg.value = message ? handleErrorMessage(message) :  error.data.error;
+    errorMsg.value = message
+      ? handleErrorMessage(message)
+      : error?.data?.error || "Unable to sign in";
   } else {
-    const { data } = await store.me();
+    const { success: userLoaded } = await nuxtApp.runWithContext(() => store.me());
+    if (!userLoaded) {
+      store.clearSession();
+      errorMsg.value = "Unable to load your profile. Please sign in again.";
+      return;
+    }
 
     setTimeout(() => {
       //@ts-ignore
-      useNuxtApp().$toast.success(`Welcome ${data.user.name}`);
+      nuxtApp.$toast.success(`Welcome ${store.user?.name || ""}`);
     }, 1000);
 
     router.push("/");
   }
 };
 
-const handleErrorMessage = (message: string | string[]) => Array.isArray(message) ? message.join("\n") : message; 
+const handleErrorMessage = (message: string | string[]) =>
+  Array.isArray(message) ? message.join("\n") : message;
 
 definePageMeta({
   layout: "auth",
@@ -53,13 +62,7 @@ useSeoMeta({
       <v-card-text class="mt-5 mb-5">
         <v-row justify="center" class="align-center">
           <v-col cols="12">
-            <v-alert
-              v-if="errorMsg"
-              class="mb-3"
-              color="danger"
-              variant="tonal"
-              density="compact"
-            >
+            <v-alert v-if="errorMsg" class="mb-3" color="danger" variant="tonal" density="compact">
               {{ errorMsg }}
             </v-alert>
             <div class="font-weight-medium mb-1">
@@ -90,13 +93,7 @@ useSeoMeta({
               isRequired
               isPassword
             />
-            <v-btn
-              color="primary"
-              block
-              class="mt-2"
-              :loading="loading"
-              @click="onSignIn"
-            >
+            <v-btn color="primary" block class="mt-2" :loading="loading" @click="onSignIn">
               Login In
             </v-btn>
           </v-col>

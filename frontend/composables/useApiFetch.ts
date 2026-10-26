@@ -1,5 +1,5 @@
 import { useLog, useLogError } from "./useLog";
-import { useAuthStore } from "~/store/auth";
+import { useAuthRequest } from "./useAuthRequest";
 
 export type useAPIFetchType = {
   success: boolean;
@@ -12,7 +12,7 @@ export const useAPIFetch = async (
   _payload: any = {},
   _blob: boolean = false,
 ): Promise<useAPIFetchType> => {
-  const { token } = storeToRefs(useAuthStore());
+  const request = useAuthRequest();
   const config = useRuntimeConfig();
   const options: any = {};
   let _return: useAPIFetchType = {
@@ -26,12 +26,6 @@ export const useAPIFetch = async (
   if (_blob) {
     options.responseType = "blob";
   }
-  //@ts-ignore
-  options.onRequest = ({ request, options }) => {
-    options.headers.set("Authorization", `Bearer ${token.value}`);
-    options.headers.set("Accept", _blob ? "text/csv" : "application/json");
-    options.headers.set("content-type", "application/json");
-  };
 
   useLog(
     {
@@ -42,7 +36,7 @@ export const useAPIFetch = async (
   );
 
   try {
-    _return.data = await $fetch(path, options);
+    _return.data = await request(path, options);
     useLog(_return, false);
     return _return;
   } catch (err) {

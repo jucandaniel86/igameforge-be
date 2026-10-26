@@ -13,6 +13,9 @@ import { UsersFilterDto } from './dto/UsersFilterDto.js';
 import { SaveUsersDto } from './dto/SaveUsersDto.js';
 import { withMessage } from '../common/interceptors/response.interceptor.js';
 import { ChangePasswordDto } from './dto/ChangePasswordDto.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import { JwtPayload } from '../auth/strategies/jwt.strategy.js';
+import { ChangeEnvironmentDto } from './dto/ChangeEnvironmentDto.js';
 
 @Controller('users')
 export class UsersController {
@@ -50,5 +53,18 @@ export class UsersController {
     const result = await this.usersService.changePassword(dto);
 
     return withMessage(result, 'Password changed successfully');
+  }
+
+  @Get('change-env')
+  @UseGuards(JwtAuthGuard)
+  async changeUserEnvironment(
+    @CurrentUser() user: JwtPayload,
+    @Query() request: ChangeEnvironmentDto,
+  ) {
+    const result = await this.usersService.changeUserEnvironment(
+      user,
+      request.env,
+    );
+    return withMessage(result, 'The environemnt was changed successfully');
   }
 }

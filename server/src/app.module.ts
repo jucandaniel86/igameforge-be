@@ -32,6 +32,6 @@ import { ForgeModule } from './forge/forge.module.js';
     ForgeModule,
   ],
   providers: [UsersService],
-  controllers: [UsersController, ForgeController],
+  controllers: [UsersController],
 })
 export class AppModule {}

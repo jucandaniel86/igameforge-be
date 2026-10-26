@@ -51,6 +51,8 @@ model Game {
   theoreticalRtp Decimal? @map("theoretical_rtp") @db.Decimal(5, 2)
   rtpSd          Decimal? @map("rtp_sd") @db.Decimal(10, 4)
 
+  @@unique([siteId, brandId, gameId, env], map: "games_site_brand_game_env_unique")
+  @@index([siteId, brandId, gameId, env, id], map: "games_dedupe_idx")
   @@map("games")
 }
 
@@ -135,12 +137,13 @@ model User {
 
   updatedAt   DateTime?    @map("updated_at") @db.Timestamp(0)
   env         Environment? @default(dev)
-  allowedEnvs Json?        @map("allowed_envs") @db.Json
+  allowedEnvs Json?        @map("allowed_envs")
   userType    UserType     @default(operator) @map("user_type")
   siteId      String       @map("site_id") @db.VarChar(20)
   provider    String       @db.VarChar(30)
 
-  roles UserRole[]
+  roles        UserRole[]
+  authSessions AuthSession[]
 
   @@unique(email, map: "users_email_unique")
   @@map("users")
@@ -168,8 +171,8 @@ model Role {
   name        String    @db.VarChar(255)
   guardName   String    @default("api") @map("guard_name") @db.VarChar(255)
   description String?   @db.VarChar(255)
-	createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
-	updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
 
   users       UserRole[]
   permissions RoleHasPermission[]
@@ -202,4 +205,37 @@ model UserRole {
   @@id([userId, roleId])
   @@index([roleId])
   @@map("user_roles")
+}
+
+enum CronType {
+  exchange
+
+  forge_api
+}
+
+model Cron {
+  id            BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  addedAt       DateTime     @map("added_at") @db.DateTime(0)
+  cronType      CronType     @map("cron_type")
+  totalInserted Int?         @default(0) @map("total_inserted") @db.Int
+  totalUpdated  Int?         @default(0) @map("total_updated") @db.Int
+  success       Int?         @db.TinyInt
+  details       String?      @db.LongText
+  env           Environment?
+
+  @@map("crons")
+}
+
+model AuthSession {
+  id        String    @id @db.Char(36)
+  userId    BigInt    @map("user_id") @db.UnsignedBigInt
+  tokenHash String    @map("token_hash") @db.Char(64)
+  expiresAt DateTime  @map("expires_at") @db.DateTime(3)
+  revokedAt DateTime? @map("revoked_at") @db.DateTime(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.DateTime(3)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("auth_sessions")
 }

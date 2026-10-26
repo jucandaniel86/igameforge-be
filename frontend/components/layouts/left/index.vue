@@ -76,3 +76,9 @@ async function changeEnvironment(env: string) {
     </v-list>
   </v-navigation-drawer>
 </template>
+<style>
+ .v-list-group__items .v-list-item {
+    padding-inline-start : 24px !important
+ }
+
+</style>

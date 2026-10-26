@@ -38,9 +38,8 @@ const { confirmAsync, alertWarning, alertSuccess } = useAlert();
 //methods
 const getLatestUpdates = async () => {
   loadLatest.value = true;
-  const { success, data } = await useAPIFetch("/sync/latest");
-
-  console.log("getLatestUpdates", success, data);
+  const { success, data } = await useAPIFetch("/forge/last-updates");
+ 
   if (success && data) {
     latestUpdates.value = data.data;
   }
@@ -57,7 +56,7 @@ const syncGames = async () => {
   await confirmAsync("Are you sure you want to sync games?").then(async (confirmed: boolean) => {
     if (confirmed) {
       gamesSyncLoading.value = true;
-      const { success, data } = await useAPIFetch("/sync/games", {
+      const { success, data } = await useApiPostFetch("/forge/sync/games", {
         env: currentGamesEnvironments.value,
       });
 
@@ -87,7 +86,7 @@ const syncOperators = async () => {
     async (confirmed: boolean) => {
       if (confirmed) {
         operatorsSyncLoading.value = true;
-        const { success, data } = await useAPIFetch("/sync/operators", {
+        const { success, data } = await useApiPostFetch("/forge/sync/operators", {
           env: currentOperatorsEnvironments.value,
         });
 
@@ -156,7 +155,7 @@ onMounted(async () => {
             :items="environments"
             :loading="!environments.length"
             :item-title="'label'"
-            :item-children="'key'"
+            :item-value="'id'"
           />
           <v-btn
             color="primary"
@@ -189,7 +188,7 @@ onMounted(async () => {
             :items="environments"
             :loading="!environments.length"
             :item-title="'label'"
-            :item-children="'key'"
+            :item-value="'id'"
           />
           <v-btn
             color="primary"

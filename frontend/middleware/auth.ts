@@ -1,26 +1,16 @@
 import { useAuthStore } from "~/store/auth";
 
 export default defineNuxtRouteMiddleware(async (to) => {
-  const { authenticated } = storeToRefs(useAuthStore());
-  const store = useAuthStore();
-
-  if (to?.name !== "login") {
-    const { success } = await store.me();
-
-    if (!success) {
-      abortNavigation();
-      authenticated.value = false;
+  const auth = useAuthStore();
+  await auth.restore();
+  if (to.name !== "login") {
+    if (!auth.authenticated) return navigateTo("/login");
+    const result = await auth.me();
+    if (!result.success) {
+      auth.clearSession();
       return navigateTo("/login");
     }
-  }
-
-  if (!authenticated.value && to?.name !== "login") {
-    abortNavigation();
-
-    return navigateTo("/login");
-  }
-
-  if (authenticated.value && to?.name === "login") {
+  } else if (auth.authenticated) {
     return navigateTo("/");
   }
 });
