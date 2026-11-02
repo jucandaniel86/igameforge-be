@@ -49,12 +49,8 @@ const runImport = async (): Promise<void> => {
   if (success) {
     importResult.value = data;
 
-    if (!data.success) {
-      return alertError(data.message);
-    }
-
     emitters("onListReload");
-    return alertSuccess(data.message);
+    return;
   }
 
   if (!success && error) {

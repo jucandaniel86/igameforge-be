@@ -17,6 +17,18 @@ export const menuItems: MenuItemType[] = [
     id: "sidebarGameResources",
     icon: "mdi-poker-chip",
     link: "/resources",
+    subMenu: [
+      {
+        label: "Games Resources",
+        id: "sidebarGames",
+        link: "/resources",
+      },
+      {
+        label: "Templates",
+        id: "sidebarTemplates",
+        link: "/game-templates",
+      },
+    ],
   },
   {
     label: "Users Administration",

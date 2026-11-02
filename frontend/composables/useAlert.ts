@@ -15,6 +15,7 @@ export const useAlert = () => {
 
   const confirmDelete = async (cb: any) => {
     const swal = new fn.$swal({
+      customClass: { container: "app-alert" },
       title: "Confirm",
       text: "Are you sure you want to delete this entry?",
       showCancelButton: true,
@@ -31,6 +32,7 @@ export const useAlert = () => {
 
   const confirm = ({ text, onClick }: AlertConfirmType) => {
     const swal = new fn.$swal({
+      customClass: { container: "app-alert" },
       title: "Confirm",
       text,
       showCancelButton: true,
@@ -48,6 +50,7 @@ export const useAlert = () => {
   const confirmAsync = async (text: string): Promise<boolean> => {
     return new Promise((resolve, reject) => {
       const swal = new fn.$swal({
+        customClass: { container: "app-alert" },
         title: "Confirm",
         text,
         showCancelButton: true,

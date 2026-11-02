@@ -15,6 +15,9 @@ import { UsersService } from './users/users.service.js';
 import { UsersModule } from './users/users.module.js';
 import { ForgeController } from './forge/forge.controller.js';
 import { ForgeModule } from './forge/forge.module.js';
+import { GamesController } from './games/games.controller.js';
+import { GamesService } from './games/games.service.js';
+import { GamesModule } from './games/games.module.js';
 
 @Module({
   imports: [
@@ -30,8 +33,9 @@ import { ForgeModule } from './forge/forge.module.js';
     RolesModule,
     UsersModule,
     ForgeModule,
+    GamesModule,
   ],
-  providers: [UsersService],
-  controllers: [UsersController],
+  providers: [UsersService, GamesService],
+  controllers: [UsersController, GamesController],
 })
 export class AppModule {}

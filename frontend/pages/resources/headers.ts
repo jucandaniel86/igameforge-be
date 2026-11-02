@@ -42,8 +42,8 @@ export const RESOURCE_OPERATOR_HEADERS: ReportHeadersData[] = [
     title: "Game ID",
     align: "start",
     sortable: false,
-    value: "id",
-    key: "id",
+    value: "gameId",
+    key: "gameId",
   },
   {
     title: "Resources",

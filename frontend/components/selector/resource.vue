@@ -16,15 +16,12 @@ const emitters = defineEmits(["update:modelValue", "loading"]);
 //methods
 const getItems = async () => {
   loading.value = true;
-  const { data, success } = await useAPIFetch(
-    "/resources/operator-fields/get",
-    {
-      operatorID: props.operatorId,
-    }
-  );
+  const { data, success } = await useAPIFetch("/resources/operator-fields/get", {
+    operatorID: props.operatorId,
+  });
 
   if (success) {
-    items.value = data.fields || [];
+    items.value = data.data.fields || [];
   }
   emitters("loading", items.value.length);
   loading.value = false;
@@ -46,7 +43,7 @@ watch(
     items.value = [];
     k.value = `K${new Date().getTime()}`;
   },
-  { immediate: true }
+  { immediate: true },
 );
 </script>
 <template>

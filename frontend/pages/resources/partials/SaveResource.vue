@@ -130,8 +130,8 @@ const getFields = async (): Promise<void> => {
     language: language.value,
   });
 
-  if (data && Array.isArray(data.fields)) {
-    resources.value = data.fields.map((field: any) => ({
+  if (data && Array.isArray(data.data?.fields)) {
+    resources.value = data.data.fields.map((field: any) => ({
       id: field.id,
       resourceType: field.field_type,
       resourceContent: convertGetFields(field.content, field.field_type),
@@ -245,9 +245,8 @@ const save = async (): Promise<void> => {
     )
     .map((resource) => ({
       operator_id: resource.operatorID,
-      language: resource.language,
       content: convertRespurce(resource.resourceContent, resource.resourceType),
-      game_id: resource.gameID,
+      game_id: String(resource.gameID),
       field_id: resource.field_id,
     }));
 
@@ -278,7 +277,7 @@ const getGameStatus = async (): Promise<void> => {
   deactivated.value =
     data?.data.filter(
       (item: any) =>
-        parseInt(item.game_id) === props.gameId && item.operator_id === operatorID.value,
+        String(item.gameId) === String(props.gameId) && item.operatorId === operatorID.value,
     )?.length > 0;
 };
 
@@ -289,7 +288,7 @@ const saveOperatorActive = async () => {
 
   const { data, success, error } = await useApiPostFetch("/resources/operator-active-games/save", {
     operatorID: operatorID.value,
-    gameID: props.gameId,
+    gameID: String(props.gameId),
     env: authStore.user?.env,
   });
 
@@ -369,15 +368,15 @@ onMounted(() => {
 });
 </script>
 <template>
-  <v-card class="mb-2" min-height="600">
-    <v-card-title class="d-flex align-center justify-space-between">
+  <v-card class="mb-2" min-height="600" style="max-height: 100%">
+    <v-card-title class="d-flex align-center justify-space-between" style="height: 50px">
       <span>{{ `Resources for game ${props.gameId}` }}</span>
       <v-btn color="primary" size="small" @click.prevent="handleClose">
         <v-icon>mdi-close</v-icon>
         Close
       </v-btn>
     </v-card-title>
-    <v-card-text class="pb-0 pt-1">
+    <v-card-text class="pb-0 pt-1" style="max-height: calc(100% - 120px); overflow: scroll">
       <v-row>
         <v-col cols="12" md="3">
           <SelectorOperators v-model="operatorID" />
@@ -548,7 +547,7 @@ onMounted(() => {
         </TransitionGroup>
       </div>
     </v-card-text>
-    <v-card-actions class="d-flex justify-center w-100">
+    <v-card-actions class="d-flex justify-center w-100" style="height: 70px">
       <v-btn @click.prevent="save" color="primary" variant="flat" size="x-large" class="px-8">
         <v-icon icon="mdi-content-save" />
         Save

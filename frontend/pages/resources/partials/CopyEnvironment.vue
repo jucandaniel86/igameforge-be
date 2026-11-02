@@ -14,7 +14,7 @@ const { alertSuccess, alertError, axiosErrorAlert } = useAlert();
 
 //computed
 const availableEnvironments = computed(() => {
-  return user?.allowed_envs?.length ? user.allowed_envs : [user?.env].filter(Boolean);
+  return user?.allowedEnvs?.length ? user.allowedEnvs : [user?.env].filter(Boolean);
 });
 
 //emits

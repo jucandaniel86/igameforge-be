@@ -60,11 +60,14 @@ model GameResource {
   id         BigInt      @id @default(autoincrement())
   gameId     String      @map("game_id") @db.VarChar(255)
   operatorId String      @map("operator_id") @db.VarChar(255)
-  fieldId    Int         @map("field_id") @db.Int
+  fieldId    BigInt      @map("field_id") @db.UnsignedBigInt
   env        Environment @default(dev)
   language   String      @db.VarChar(50)
   content    String?     @db.Text
 
+  gameOperatorFields GameOperatorField @relation(fields: [fieldId], references: [id])
+
+  @@unique([gameId, operatorId, fieldId, language, env], map: "game_resources_unique")
   @@map("game_resources")
 }
 
@@ -73,6 +76,8 @@ model GameResourceType {
   fieldKey       String                     @map("field_key") @db.VarChar(255)
   fieldLabel     String                     @map("field_label") @db.VarChar(255)
   fieldType      String                     @map("field_type") @db.VarChar(255)
+  fieldValues    String?                    @map("field_values") @db.Text
+  fieldPriority  Int                        @default(0) @map("field_priority")
   resourceValues GamesResourceValue[]
   fieldMappings  GameOperatorFieldMapping[]
 
@@ -88,8 +93,9 @@ model GameOperatorField {
   operatorID  String  @db.VarChar(255)
 
   mapping GameOperatorFieldMapping?
-
+ 
   @@map("game_operator_fields")
+  gameResources GameResource[]
 }
 
 model GamesResourceValue {
@@ -109,15 +115,10 @@ model GamesResourceValue {
 
 model GameOperatorFieldMapping {
   id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
-
   operatorFieldId BigInt @map("operator_field_id") @db.UnsignedBigInt
-
   gameResourceTypeId BigInt @map("game_resource_type_id") @db.UnsignedBigInt
-
   extraOptions Json? @map("extra_options")
-
   operatorField GameOperatorField @relation(fields: [operatorFieldId], references: [id])
-
   gameResourceType GameResourceType @relation(fields: [gameResourceTypeId], references: [id])
 
   @@unique([operatorFieldId], map: "game_operator_field_mappings_operator_unique")
@@ -238,4 +239,14 @@ model AuthSession {
   @@index([userId])
   @@index([expiresAt])
   @@map("auth_sessions")
+}
+
+model OperatorDisabledGames {
+  id         BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  operatorId String @map("operator_id") @db.VarChar(255)
+  env        String @db.VarChar(255)
+  gameId     String @map("game_id") @db.VarChar(255)
+
+  @@unique([operatorId, env, gameId], map: "operator_active_games_unique")
+  @@map("operator_disabled_games")
 }

@@ -38,22 +38,16 @@ const items = ref<any[]>([
   { id: FieldTypeEnum.MULTISELECT, label: "Multiselect" },
 ]);
 const saveForm = ref({
-  field_label: "",
-  field_key: "",
-  field_type: "",
-  field_values: "",
-  game_resource_type_id: null as number | null,
+  fieldLabel: "",
+  fieldKey: "",
+  fieldType: "",
+  fieldValues: "",
+  gameResourceTypeId: null as number | null,
   operatorID: 0,
 });
 
 //composables
-const {
-  alertSuccess,
-  axiosErrorAlert,
-  alertError,
-  alertWarning,
-  confirmDelete,
-} = useAlert();
+const { alertSuccess, axiosErrorAlert, alertError, alertWarning, confirmDelete } = useAlert();
 
 //emitters
 const emitters = defineEmits(["onModalClose"]);
@@ -61,11 +55,11 @@ const emitters = defineEmits(["onModalClose"]);
 //methods
 const resetSaveForm = () => {
   saveForm.value = {
-    field_label: "",
-    field_key: "",
-    field_type: "",
-    field_values: "",
-    game_resource_type_id: null,
+    fieldLabel: "",
+    fieldKey: "",
+    fieldType: "",
+    fieldValues: "",
+    gameResourceTypeId: null,
     operatorID: 0,
   };
 };
@@ -75,13 +69,10 @@ const onSave = async (): Promise<void> => {
   }
 
   isSaveLoading.value = true;
-  const { success, data, error } = await useApiPostFetch(
-    `/resources/operator-fields/save`,
-    {
-      ...saveForm.value,
-      operatorID: operatorID.value,
-    },
-  );
+  const { success, data, error } = await useApiPostFetch(`/resources/operator-fields/save`, {
+    ...saveForm.value,
+    operatorID: operatorID.value,
+  });
   isSaveLoading.value = false;
   if (success) {
     alertSuccess(data.message);
@@ -96,40 +87,31 @@ const onSave = async (): Promise<void> => {
 };
 const getFields = async (): Promise<void> => {
   listLoading.value = true;
-  const { success, data, error } = await useAPIFetch(
-    `/resources/operator-fields/get`,
-    {
-      operatorID: operatorID.value,
-    },
-  );
+  const { success, data, error } = await useAPIFetch(`/resources/operator-fields/get`, {
+    operatorID: operatorID.value,
+  });
   if (success) {
-    fields.value = data.fields;
+    fields.value = data.data.fields;
   }
   listLoading.value = false;
 };
 
 const deleteField = async (fieldID: number): Promise<void> => {
   await confirmDelete(async () => {
-    const { data, success } = await useApiDeleteFetch(
-      "/resources/operator-fields/delete",
-      {
-        fieldID,
-      },
-    );
+    const { data, success, error } = await useApiDeleteFetch("/resources/operator-fields/delete", {
+      fieldID,
+    });
 
     if (!data.success) {
-      return alertError(data.msg);
+      return axiosErrorAlert(error);
     }
 
-    alertSuccess(data.msg);
+    alertSuccess(data.data.message);
     getFields();
   });
 };
 const edit = async (field: any): Promise<void> => {
-  const { success, data, error } = await useApiPostFetch(
-    `/resources/operator-fields/save`,
-    field,
-  );
+  const { success, data, error } = await useApiPostFetch(`/resources/operator-fields/save`, field);
   if (success) {
     return alertSuccess(data.message);
   }
@@ -157,11 +139,7 @@ watch(operatorID, () => {
     <v-card-text>
       <v-table density="compact" fixed-header striped="odd">
         <template #top>
-          <v-progress-linear
-            v-if="listLoading"
-            color="green"
-            indeterminate
-          ></v-progress-linear>
+          <v-progress-linear v-if="listLoading" color="green" indeterminate></v-progress-linear>
         </template>
         <thead>
           <tr>
@@ -174,7 +152,7 @@ watch(operatorID, () => {
           <tr>
             <td class="pt-1 pb-1 pr-0 pl-1">
               <v-text-field
-                v-model="saveForm.field_label"
+                v-model="saveForm.fieldLabel"
                 hide-details
                 variant="outlined"
                 density="compact"
@@ -183,7 +161,7 @@ watch(operatorID, () => {
             </td>
             <td class="pt-1 pb-1 pr-0 pl-1">
               <v-text-field
-                v-model="saveForm.field_key"
+                v-model="saveForm.fieldKey"
                 hide-details
                 variant="outlined"
                 density="compact"
@@ -192,7 +170,7 @@ watch(operatorID, () => {
             </td>
             <td class="pt-1 pb-1 pr-0 pl-1">
               <v-select
-                v-model="saveForm.field_type"
+                v-model="saveForm.fieldType"
                 :items="items"
                 :item-title="'label'"
                 :item-value="'id'"
@@ -204,9 +182,9 @@ watch(operatorID, () => {
             </td>
             <td class="pt-1 pb-1 pr-0 pl-1">
               <v-select
-                v-model="saveForm.game_resource_type_id"
+                v-model="saveForm.gameResourceTypeId"
                 :items="gameResourceTypes"
-                :item-title="'field_label'"
+                :item-title="'fieldLabel'"
                 :item-value="'id'"
                 clearable
                 hide-details
@@ -216,12 +194,7 @@ watch(operatorID, () => {
               />
             </td>
             <td class="pt-1 pb-1 pr-0 pl-1">
-              <v-btn
-                color="secondary"
-                :disabled="isSaveLoading"
-                @click="onSave"
-                size="small"
-              >
+              <v-btn color="secondary" :disabled="isSaveLoading" @click="onSave" size="small">
                 <i class="mdi mdi-plus-circle-outline" /> Add
               </v-btn>
             </td>
@@ -229,12 +202,12 @@ watch(operatorID, () => {
           <tr
             v-if="
               [FieldTypeEnum.SELECT, FieldTypeEnum.MULTISELECT].indexOf(
-                saveForm.field_type as any,
+                saveForm.fieldType as any,
               ) !== -1
             "
           >
             <td colspan="5" class="pt-1 pb-1 pr-0 pl-1">
-              <v-textarea v-model="saveForm.field_values" label="Values" />
+              <v-textarea v-model="saveForm.fieldValues" label="Values" />
             </td>
           </tr>
         </thead>
@@ -243,7 +216,7 @@ watch(operatorID, () => {
             <tr>
               <td class="pt-1 pb-1 pr-0 pl-1">
                 <v-text-field
-                  v-model="field.field_label"
+                  v-model="field.fieldLabel"
                   hide-details
                   variant="outlined"
                   density="compact"
@@ -252,7 +225,7 @@ watch(operatorID, () => {
               </td>
               <td class="pt-1 pb-1 pr-0 pl-1">
                 <v-text-field
-                  v-model="field.field_key"
+                  v-model="field.fieldKey"
                   hide-details
                   variant="outlined"
                   density="compact"
@@ -261,7 +234,7 @@ watch(operatorID, () => {
               </td>
               <td class="pt-1 pb-1 pr-0 pl-1">
                 <v-select
-                  v-model="field.field_type"
+                  v-model="field.fieldType"
                   :items="items"
                   :item-title="'label'"
                   :item-value="'id'"
@@ -273,9 +246,9 @@ watch(operatorID, () => {
               </td>
               <td class="pt-1 pb-1 pr-0 pl-1">
                 <v-select
-                  v-model="field.game_resource_type_id"
+                  v-model="field.gameResourceTypeId"
                   :items="gameResourceTypes"
-                  :item-title="'field_label'"
+                  :item-title="'fieldLabel'"
                   :item-value="'id'"
                   clearable
                   hide-details
@@ -285,30 +258,32 @@ watch(operatorID, () => {
                 />
               </td>
               <td class="pt-1 pb-1 pr-0 pl-1">
-                <v-btn
-                  color="green"
-                  size="x-small"
-                  icon="mdi-content-save-outline"
-                  @click.prevent="edit(field)"
-                />
-                <v-btn
-                  color="red"
-                  size="x-small"
-                  icon="mdi-close"
-                  @click="deleteField(field.id)"
-                />
+                <div class="d-flex justify-content-center ga-2">
+                  <v-btn
+                    color="green"
+                    size="x-small"
+                    icon="mdi-content-save-outline"
+                    @click.prevent="edit(field)"
+                  />
+                  <v-btn
+                    color="red"
+                    size="x-small"
+                    icon="mdi-close"
+                    @click="deleteField(field.id)"
+                  />
+                </div>
               </td>
             </tr>
             <tr
               v-if="
                 [FieldTypeEnum.SELECT, FieldTypeEnum.MULTISELECT].indexOf(
-                  field.field_type as any,
+                  field.fieldType as any,
                 ) !== -1
               "
             >
               <td colspan="5" class="pt-1 pb-1 pr-0 pl-1">
                 <v-textarea
-                  v-model="field.field_values"
+                  v-model="field.fieldValues"
                   variant="outlined"
                   density="compact"
                   class="elevation-0"

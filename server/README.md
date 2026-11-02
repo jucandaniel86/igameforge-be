@@ -1,5 +1,9 @@
 # iGameForge backend
 
+Deployment: [ghidul de deploy](../DEPLOY.md) descrie configurația actuală MySQL/MariaDB
+și instalarea cu import manual al bazei, fără migrări. Secțiunile istorice despre
+PostgreSQL și scaffold de mai jos nu descriu configurația actuală de producție.
+
 NestJS 12 REST API with native ESM, npm, TypeScript and Prisma 7. Node 22.12+ on the 22 line (verified on 22.16.0), or Node 24+. npm 10+. No global CLI is required.
 
 ## Getting started

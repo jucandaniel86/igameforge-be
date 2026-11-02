@@ -2,6 +2,7 @@ import { ValidationPipe, type INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BigIntInterceptor } from './interceptors/bigint.interceptor.js';
 import { ResponseInterceptor } from './interceptors/response.interceptor.js';
+import { Reflector } from '@nestjs/core';
 
 export function setupApp(app: INestApplication): void {
   const origins = app
@@ -19,6 +20,10 @@ export function setupApp(app: INestApplication): void {
       transform: true,
     }),
   );
-  app.useGlobalInterceptors(new BigIntInterceptor(), new ResponseInterceptor());
+  const reflector = app.get(Reflector);
+  app.useGlobalInterceptors(
+    new BigIntInterceptor(),
+    new ResponseInterceptor(reflector),
+  );
   app.enableShutdownHooks();
 }

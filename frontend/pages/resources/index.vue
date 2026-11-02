@@ -4,7 +4,6 @@ import { RESOURCE_HEADERS, RESOURCE_OPERATOR_HEADERS } from "./headers";
 import OperatorFieldsModal from "./partials/OperatorFieldsModal.vue";
 import SaveResource from "./partials/SaveResource.vue";
 import CopyGameResource from "./partials/CopyGameResource.vue";
-import GameSettings from "./partials/GameSettings.vue";
 import GamesToOperator from "./partials/GamesToOperator.vue";
 import CopyEnvironment from "./partials/CopyEnvironment.vue";
 
@@ -27,7 +26,7 @@ const selectedGame = ref<number | string>(0);
 const openModalFields = ref<boolean>(false);
 const openCopyResource = ref<boolean>(false);
 const openCopyDefaultsToOperator = ref<boolean>(false);
-const openGameSettings = ref<boolean>(false);
+
 const currentGame = ref<number | string | null>();
 const currentGameName = ref<string>("");
 const gameResourceTypes = ref<any[]>([]);
@@ -43,7 +42,6 @@ const loadingGames = ref(false);
 //composables
 const { removeDuplicates } = useUtils();
 const { alertSuccess, alertError, axiosErrorAlert } = useAlert();
-const { hasPermission, user } = useAuthStore();
 
 type CopyGameResourcesPayload = {
   operatorID: number | string;
@@ -53,20 +51,20 @@ type CopyGameResourcesPayload = {
 
 //methods
 const getGames = async (): Promise<void> => {
-	loadingGames.value = true;
+  loadingGames.value = true;
   const { data } = await useAPIFetch("/resources/games");
   if (data.success) {
     games.value = data.data;
     totalItems.value = games.value.length;
   }
-	loadingGames.value = false
+  loadingGames.value = false;
 };
 
 const getGameResourceTypes = async (): Promise<void> => {
   const { success, data, error } = await useAPIFetch("/resources/game-resource-types/list");
 
   if (success) {
-    gameResourceTypes.value = data.fields || [];
+    gameResourceTypes.value = data.data.fields || [];
   }
 
   if (!success && error) {
@@ -88,18 +86,12 @@ const addFields = (gameID: number | string) => {
 const formatOperators = (operators: string) => {
   if (!operators) return [];
 
-  return Array.isArray(operators) ? operators : operators.split(',')
+  return Array.isArray(operators) ? operators : operators.split(",");
 };
 
 const handleOpenCopyResource = (gameID: string | number) => {
   currentGame.value = gameID;
   openCopyResource.value = true;
-};
-
-const handleOpenGameSettings = (game: any) => {
-  currentGame.value = game.id;
-  currentGameName.value = game.label;
-  openGameSettings.value = true;
 };
 
 const handleOpenCopyDefaultsToOperator = (game: any) => {
@@ -119,12 +111,6 @@ const closeCopyDefaultsToOperator = () => {
   currentGameName.value = "";
   copyDefaultsOperatorIds.value = [];
   openCopyDefaultsToOperator.value = false;
-};
-
-const closeGameSettings = () => {
-  currentGame.value = null;
-  currentGameName.value = "";
-  openGameSettings.value = false;
 };
 
 const displayedGames = computed(() => {
@@ -293,7 +279,7 @@ onMounted(() => {
     <template v-slot:top>
       <v-row justify="start" class="align-center">
         <v-col cols="12" md="3">
-          <SelectorOperators v-model="operator" :disabled="noResources" />
+          <SelectorOperators v-model="operator" :disabled="noResources === 1" />
         </v-col>
         <v-col cols="12" md="2">
           <v-checkbox
@@ -341,7 +327,7 @@ onMounted(() => {
         </v-col>
       </v-row>
     </template>
-		
+
     <template v-slot:item.resources="{ item, index }">
       <span v-if="item.operators">
         <v-chip v-for="operator in formatOperators(item.operators)" :text="operator" />
@@ -351,15 +337,6 @@ onMounted(() => {
     <template v-slot:item.label="{ item, index }">
       <div class="d-flex flex-column flex-start align-start ga-0">
         <span>{{ item.title }}</span>
-        <v-btn
-          variant="text"
-          color="primary"
-          size="small"
-          class="pl-0"
-          @click="handleOpenGameSettings(item)"
-        >
-          <i class="mdi mdi-plus-circle-outline" /> Edit Game Template
-        </v-btn>
       </div>
     </template>
     <template v-slot:item.has_game_resource_values="{ item }">
@@ -399,11 +376,11 @@ onMounted(() => {
         </v-list>
       </v-menu>
     </template>
-		<template #bottom>
-			<div class="pa-4 text-right text-medium-emphasis">
-				Total: <span>{{ displayedGames.length }}</span> /<strong>{{ games.length }}</strong> games
-			</div>
-		</template>
+    <template #bottom>
+      <div class="pa-4 text-right text-medium-emphasis">
+        Total: <span>{{ displayedGames.length }}</span> /<strong>{{ games.length }}</strong> games
+      </div>
+    </template>
   </v-data-table>
   <v-dialog v-model="openModalFields" :max-width="900">
     <OperatorFieldsModal
@@ -457,15 +434,7 @@ onMounted(() => {
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-dialog v-model="openGameSettings" :max-width="800" @after-leave="closeGameSettings">
-    <GameSettings
-      v-if="currentGame"
-      :game-id="currentGame"
-      :game-name="currentGameName"
-      @on-modal-close="closeGameSettings"
-      @on-list-reload="getGames"
-    />
-  </v-dialog>
+
   <v-dialog v-model="openCopyEnvironment" :max-width="600">
     <CopyEnvironment @close="openCopyEnvironment = false" @copied="getGames" />
   </v-dialog>

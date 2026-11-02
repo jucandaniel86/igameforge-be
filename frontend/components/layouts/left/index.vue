@@ -1,28 +1,29 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { storeToRefs } from 'pinia';
-import { menuItems } from '@/app/menu';
-import { useAuthStore } from '~/store/auth';
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
+import { menuItems } from "@/app/menu";
+import { useAuthStore } from "~/store/auth";
 
 const open = defineModel<boolean>({ default: false });
-const { public: { appName, version } } = useRuntimeConfig();
+const {
+  public: { appName, version },
+} = useRuntimeConfig();
 const { user } = storeToRefs(useAuthStore());
 const auth = useAuthStore();
 const changingEnvironment = ref(false);
-const environments = computed(() => user.value?.allowedEnvs?.length
-  ? user.value.allowedEnvs : [user.value?.env].filter(Boolean));
+const environments = computed(() =>
+  user.value?.allowedEnvs?.length ? user.value.allowedEnvs : [user.value?.env].filter(Boolean),
+);
 
 async function changeEnvironment(env: string) {
   changingEnvironment.value = true;
   try {
-    const { success } = await useAPIFetch('/users/change-env', { env });
+    const { success } = await useAPIFetch("/users/change-env", { env });
     if (success) window.location.reload();
   } finally {
     changingEnvironment.value = false;
   }
 }
-
- 
 </script>
 
 <template>
@@ -77,8 +78,7 @@ async function changeEnvironment(env: string) {
   </v-navigation-drawer>
 </template>
 <style>
- .v-list-group__items .v-list-item {
-    padding-inline-start : 24px !important
- }
-
+.v-list-group__items .v-list-item {
+  padding-inline-start: 24px !important;
+}
 </style>

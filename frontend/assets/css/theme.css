@@ -525,12 +525,16 @@ select {
   border-top: 1px solid var(--app-border);
 }
 
-/* Render success/error alerts above Vuetify dialogs and their scrims. */
+/* Render alerts and confirmations above Vuetify dialogs and their scrims. */
 .swal2-container.app-alert {
   z-index: 10000 !important;
 }
 
- 
+.v-field.v-field--active .v-label.v-field-label--floating {
+  color: black;
+  opacity: 1 !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
